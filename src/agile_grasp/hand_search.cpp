@@ -1,12 +1,11 @@
 #include <agile_grasp/hand_search.h>
 
-
-std::vector<GraspHypothesis> HandSearch::findHands(const PointCloud::Ptr cloud, 
-  const Eigen::VectorXi& pts_cam_source, const std::vector<int>& indices, 
-  const PointCloud::Ptr cloud_plot, bool calculates_antipodal, 
-  bool uses_clustering)
+std::vector<GraspHypothesis> HandSearch::findHands(const PointCloud::Ptr cloud,
+	const Eigen::VectorXi& pts_cam_source, const std::vector<int>& indices,
+	const PointCloud::Ptr cloud_plot, bool calculates_antipodal,
+	bool uses_clustering)
 {
-  // create KdTree for neighborhood search
+	// create KdTree for neighborhood search
 	pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
 	kdtree.setInputCloud(cloud);
 
@@ -57,10 +56,9 @@ std::vector<GraspHypothesis> HandSearch::findHands(const PointCloud::Ptr cloud,
 	// find hands
 	std::cout << "Finding hand poses ...\n";
 	std::vector<GraspHypothesis> hand_list = findHands(cloud, pts_cam_source, quadric_list, hands_cam_source, kdtree);
-  
-  return hand_list;
-}
 
+	return hand_list;
+}
 
 std::vector<Quadric> HandSearch::findQuadrics(const PointCloud::Ptr cloud,
 	const Eigen::VectorXi& pts_cam_source, const pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree,
@@ -159,18 +157,16 @@ std::vector<GraspHypothesis> HandSearch::findHands(const PointCloud::Ptr cloud,
 				nn_normals.col(j) = cloud_normals_.col(nn_indices[j]);
 			}
 
-			FingerHand finger_hand(finger_width_, hand_outer_diameter_, hand_depth_);
-
 			Eigen::Vector3d sample_eig = sample.getVector3fMap().cast<double>();
 			RotatingHand rotating_hand(cam_tf_left_.block<3, 1>(0, 3) - sample_eig,
-				cam_tf_right_.block<3, 1>(0, 3) - sample_eig, finger_hand, tolerant_antipodal_, hands_cam_source(i));
+				cam_tf_right_.block<3, 1>(0, 3) - sample_eig, tolerant_antipodal_, hands_cam_source(i));
 			const Quadric& q = quadric_list[i];
 			double time_tf1 = omp_get_wtime();
 			rotating_hand.transformPoints(centered_neighborhood, q.getNormal(), q.getCurvatureAxis(), nn_normals,
 				nn_cam_source, hand_height_);
 			time_tf += omp_get_wtime() - time_tf1;
 			double time_eval1 = omp_get_wtime();
-			std::vector<GraspHypothesis> grasps = rotating_hand.evaluateHand(init_bite_, sample_eig, true);
+			std::vector<GraspHypothesis> grasps = rotating_hand.evaluateHand(finger_hand_, init_bite_, sample_eig, true);
 			time_eval_hand += omp_get_wtime() - time_eval1;
 
 			if (grasps.size() > 0)

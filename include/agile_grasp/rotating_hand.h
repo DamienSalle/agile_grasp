@@ -68,18 +68,17 @@ public:
 	*/
 	RotatingHand(bool tolerant_antipodal, int cam_source) 
     : tolerant_antipodal_(tolerant_antipodal), cam_source_(cam_source)
-	{	}
+	{}
 
 	/**
 	 * \brief Constructor.
 	 * \param camera_origin_left the position of the left camera
 	 * \param camera_origin_right the position of the right camera
-	 * \param finger_hand the FingerHand object to be used
 	 * \param tolerant_antipodal whether the antipodal quality estimation uses "tolerant" thresholds
 	 * \param the camera source of the sample for which the point neighborhood was found
 	 */
 	RotatingHand(const Eigen::VectorXd& camera_origin_left, const Eigen::VectorXd& camera_origin_right,
-			const FingerHand& finger_hand, bool tolerant_antipodal, int cam_source);
+			bool tolerant_antipodal, int cam_source);
 
 	/**
 	 * \brief Transforms a set of points into the hand frame, defined by normal and axis.
@@ -93,55 +92,53 @@ public:
 	void transformPoints(const Eigen::Matrix3Xd& points, const Eigen::Vector3d& normal,
 			const Eigen::Vector3d& axis, const Eigen::Matrix3Xd& normals, const Eigen::VectorXi& points_cam_source,
 			double hand_height);
-	
+
 	/**
 	 * \brief Evaluate which hand orientations and which finger placements lead to a valid grasp.
 	 * \param init_bite the minimum object height
 	 * \param sample the sample for which the point neighborhood was found
 	 * \param use_antipodal whether the hand orientations are checked for antipodal grasps
 	 */
-	std::vector<GraspHypothesis> evaluateHand(double init_bite, const Eigen::Vector3d& sample, bool use_antipodal);
-			  
-  /**
-   * \brief Return the camera positions.
-   * \return the 3x2 matrix containing the positions of the cameras
-  */
-  const Eigen::Matrix<double, 3, 2>& getCams() const 
-  {
-    return cams_;
-  }
-  
-  /**
-   * \brief Return the camera source for each point in the point neighborhood.
-   * \return the 1xn matrix containing the camera source for each point in the point neighborhood
-  */
-  const Eigen::VectorXi& getPointsCamSource() const 
-  {
-    return points_cam_source_;
-  }
-  
-  /**
-   * \brief Return the camera source of the sample for which the point neighborhood was calculated.
-   * \return the camera source of the sample
-  */
-  int getCamSource() const
-  {
-    return cam_source_;
-  }
+	std::vector<GraspHypothesis> evaluateHand(FingerHand *finger_hand, double init_bite, const Eigen::Vector3d& sample, bool use_antipodal);
+
+	/**
+	 * \brief Return the camera positions.
+	 * \return the 3x2 matrix containing the positions of the cameras
+	*/
+	const Eigen::Matrix<double, 3, 2>& getCams() const 
+	{
+		return cams_;
+	}
+
+	/**
+	 * \brief Return the camera source for each point in the point neighborhood.
+	 * \return the 1xn matrix containing the camera source for each point in the point neighborhood
+	*/
+	const Eigen::VectorXi& getPointsCamSource() const 
+	{
+		return points_cam_source_;
+	}
+
+	/**
+	 * \brief Return the camera source of the sample for which the point neighborhood was calculated.
+	 * \return the camera source of the sample
+	*/
+	int getCamSource() const
+	{
+		return cam_source_;
+	}
 
 
 private:
+	int cam_source_;                    ///< the camera source of the sample
+	Eigen::Matrix<double, 3, 2> cams_;  ///< the camera positions
+	Eigen::VectorXd angles_;            ///< the hand orientations that are evaluated
+	Eigen::Matrix3Xd points_;           ///< the points in the point neighborhood
+	Eigen::Vector3d hand_axis_;         ///< the robot hand axis for the point neighborhood
+	Eigen::Matrix3d frame_;             ///< the robot hand frame for the point neighborhood
+	Eigen::Matrix3Xd normals_;          ///< the normals for each point in the point neighborhood
+	Eigen::VectorXi points_cam_source_; ///< the camera source for each point in the point neighborhood
 
-  int cam_source_; ///< the camera source of the sample
-	Eigen::Matrix<double, 3, 2> cams_; ///< the camera positions
-	Eigen::VectorXd angles_; ///< the hand orientations that are evaluated
-	Eigen::Matrix3Xd points_; ///< the points in the point neighborhood
-	Eigen::Vector3d hand_axis_; ///< the robot hand axis for the point neighborhood
-	Eigen::Matrix3d frame_; ///< the robot hand frame for the point neighborhood
-	Eigen::Matrix3Xd normals_; ///< the normals for each point in the point neighborhood
-	Eigen::VectorXi points_cam_source_;	 ///<	the camera source for each point in the point neighborhood
-  FingerHand finger_hand_; ///< the finger hand object
-  
   /** parameters */
   bool tolerant_antipodal_; ///< whether the antipodal testing uses "tolerant" thresholds
 };

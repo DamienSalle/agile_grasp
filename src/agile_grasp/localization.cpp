@@ -51,7 +51,7 @@ std::vector<GraspHypothesis> Localization::localizeHands(const PointCloud::Ptr& 
 	if (uses_clustering)
 	{
     std::cout << "Finding point cloud clusters ... \n";
-        
+
 		// Create the segmentation object for the planar model and set all the parameters
 		pcl::SACSegmentation<pcl::PointXYZ> seg;
 		pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
@@ -99,26 +99,26 @@ std::vector<GraspHypothesis> Localization::localizeHands(const PointCloud::Ptr& 
 
 	// draw down-sampled and workspace reduced cloud
 	cloud_plot = cloud;
-  
-  // set plotting within handle search on/off  
+
+  // set plotting within handle search on/off
   bool plots_hands;
   if (plotting_mode_ == PCL_PLOTTING)
 		plots_hands = true;
   else
 		plots_hands = false;
-		
+
 	// find hand configurations
-  HandSearch hand_search(finger_width_, hand_outer_diameter_, hand_depth_, hand_height_, init_bite_, num_threads_, 
+  HandSearch hand_search(finger_hand_, hand_height_, init_bite_, num_threads_,
 		num_samples_, plots_hands);
 	hand_list = hand_search.findHands(cloud, pts_cam_source, indices, cloud_plot, calculates_antipodal, uses_clustering);
 
 	// remove hands at boundaries of workspace
 	if (filters_boundaries_)
-  {
-    std::cout << "Filtering out hands close to workspace boundaries ...\n";
-    hand_list = filterHands(hand_list);
-    std::cout << " # hands left: " << hand_list.size() << "\n";
-  }
+	{
+		std::cout << "Filtering out hands close to workspace boundaries ...\n";
+		hand_list = filterHands(hand_list);
+		std::cout << " # hands left: " << hand_list.size() << "\n";
+	}
 
 	double t2 = omp_get_wtime();
 	std::cout << "Hand localization done in " << t2 - t0 << " sec\n";

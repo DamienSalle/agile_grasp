@@ -50,6 +50,9 @@ int main(int argc, char** argv)
   std::vector<double> workspace;
   std::vector<double> camera_pose;
   int cloud_type;
+  bool parallel;
+
+  node.param("parallel", parallel, true);
   node.param("cloud_topic", cloud_topic, CLOUD_TOPIC);
   node.param("cloud_frame", cloud_frame, CLOUD_FRAME);
   node.param("cloud_type", cloud_type, CLOUD_TYPE);
@@ -57,9 +60,16 @@ int main(int argc, char** argv)
   node.param("num_threads", params.num_threads_, NUM_THREADS);
   node.param("num_samples", params.num_samples_, NUM_SAMPLES); 
   node.param("num_clouds", params.num_clouds_, NUM_CLOUDS);
-  node.param("finger_width", params.finger_width_, FINGER_WIDTH);
-  node.param("hand_outer_diameter", params.hand_outer_diameter_, HAND_OUTER_DIAMETER);
-  node.param("hand_depth", params.hand_depth_, HAND_DEPTH);
+
+  if (parallel) {
+      double finger_width, hand_outer_diameter, hand_depth;
+      node.param("finger_width", finger_width, FINGER_WIDTH);
+      node.param("hand_outer_diameter", hand_outer_diameter, HAND_OUTER_DIAMETER);
+      node.param("hand_depth", hand_depth, HAND_DEPTH);
+      params.finger_hand_ = new ParallelHand(finger_width, hand_outer_diameter, hand_depth);
+  }
+  //TODO else 
+
   node.param("init_bite", params.init_bite_, INIT_BITE);
   node.param("hand_height", params.hand_height_, HAND_HEIGHT);
   node.param("min_inliers", params.min_inliers_, MIN_HANDLE_INLIERS);
@@ -88,11 +98,12 @@ int main(int argc, char** argv)
   std::cout << "  num_clouds: " << params.num_clouds_ << "\n";  
   std::cout << "  camera pose:\n" << R << std::endl;
   std::cout << " Robot Hand Model\n";
-  std::cout << "  finger_width: " << params.finger_width_ << "\n";
-  std::cout << "  hand_outer_diameter: " << params.hand_outer_diameter_ << "\n";
-  std::cout << "  hand_depth: " << params.finger_width_ << "\n";
-  std::cout << "  init_bite: " << params.finger_width_ << "\n";
-  std::cout << "  hand_height: " << params.finger_width_ << "\n";
+  //TODO: Make FingerGrasp printable.
+ // std::cout << "  finger_width: " << params.finger_width_ << "\n";
+ // std::cout << "  hand_outer_diameter: " << params.hand_outer_diameter_ << "\n";
+ // std::cout << "  hand_depth: " << params.finger_width_ << "\n";
+ // std::cout << "  init_bite: " << params.finger_width_ << "\n";
+ // std::cout << "  hand_height: " << params.finger_width_ << "\n";
   std::cout << " Antipodal Grasps Prediction\n";
   std::cout << "  svm_file_name: " << svm_file_name << "\n";
   std::cout << " Handle Search\n";

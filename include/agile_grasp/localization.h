@@ -68,13 +68,12 @@ typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 class Localization
 {
 public:
-
 	/**
 	 * \brief Default Constructor.
 	*/
 	Localization() : num_threads_(1), plotting_mode_(1), plots_camera_sources_(false), cloud_(new PointCloud)
 	{ }
-	
+
 	/**
 	 * \brief Constructor.
 	 * \param num_threads the number of threads to be used in the search
@@ -163,7 +162,26 @@ public:
 		else
 			return cam_tf_right_;
 	}
-	
+
+	/**
+	 * \brief Set the FingerHand we are working with.
+	 * \param finger_hand the finger_hand we are working with.
+	*/
+	void setFingerHand(FingerHand * const finger_hand)
+	{
+		finger_hand_ = finger_hand;
+	}
+
+	/**
+	 * \brief Set the height of the robot hand.
+	 * \param hand_height the height of the robot hand, the hand extends plus/minus this value along the hand axis
+	*/
+	void setHandHeight(double hand_height)
+	{
+		hand_height_ = hand_height;
+	}
+		
+
 	/**
 	 * \brief Set the dimensions of the robot's workspace.
 	 * \param workspace 1x6 vector containing the robot's workspace dimensions
@@ -199,34 +217,7 @@ public:
 	{
 		nn_radius_taubin_ = nn_radius_taubin;
 	}
-	
-	/**
-	 * \brief Set the finger width of the robot hand.
-	 * \param finger_width the finger width
-	*/
-	void setFingerWidth(double finger_width)
-	{
-		finger_width_ = finger_width;
-	}
-	
-	/**
-	 * \brief Set the hand depth of the robot hand.
-	 * \param hand_depth the hand depth of the robot hand (usually the finger length)
-	*/
-	void setHandDepth(double hand_depth)
-	{
-		hand_depth_ = hand_depth;
-	}
-	
-	/**
-	 * \brief Set the maximum aperture of the robot hand.
-	 * \param hand_outer_diameter the maximum aperture of the robot hand
-	*/
-	void setHandOuterDiameter(double hand_outer_diameter)
-	{
-		hand_outer_diameter_ = hand_outer_diameter;
-	}
-	
+
 	/**
 	 * \brief Set the initial "bite" of the robot hand (usually the minimum object "height").
 	 * \param init_bite the initial "bite" of the robot hand (@see FingerHand)
@@ -235,16 +226,7 @@ public:
 	{
 		init_bite_ = init_bite;
 	}
-	
-	/**
-	 * \brief Set the height of the robot hand.
-	 * \param hand_height the height of the robot hand, the hand extends plus/minus this value along the hand axis
-	*/
-	void setHandHeight(double hand_height)
-	{
-		hand_height_ = hand_height;
-	}
-		
+
 	/**
 	 * \brief Set the publisher for Rviz visualization, the lifetime of visual markers, and the frame associated with 
 	 * the grasps.
@@ -319,31 +301,29 @@ private:
 	 * \brief Round a 3D-vector down to the closest, smaller integers.
 	 * \param a the 3D-vector to be rounded down
 	 * \return the rounded down 3D-vector
-	*/ 
+	*/
 	Eigen::Vector3i floorVector(const Eigen::Vector3d& a);
 
-	Plot plot_; ///< the plot object
+	Plot plot_;                                  ///< the plot object
 	Eigen::Matrix4d cam_tf_left_, cam_tf_right_; ///< the camera poses
-	Eigen::VectorXd workspace_; ///< the robot's workspace dimensions
-	Eigen::Matrix3Xd cloud_normals_; ///< the normals for each point in the point cloud
-	PointCloud::Ptr cloud_; ///< the input point cloud
-	int num_threads_; ///< the number of CPU threads used in the search
-	int num_samples_; ///< the number of samples used in the search
-	double nn_radius_taubin_; ///< the radius of the neighborhood search used in the grasp hypothesis search
-	double nn_radius_hands_; ///< the radius of the neighborhood search used in the quadric fit
-	double finger_width_; ///< width of the fingers
-	double hand_outer_diameter_; ///< maximum hand aperture
-	double hand_depth_; ///< hand depth (finger length)
-	double hand_height_; ///< hand height
-	double init_bite_; ///< initial bite
-  bool plots_camera_sources_; ///< whether the camera source is plotted for each point in the point cloud	
-	bool filters_boundaries_; ///< whether grasp hypotheses close to the workspace boundaries are filtered out
-	int plotting_mode_; ///< what plotting mode is used
-	std::string visuals_frame_; ///< visualization frame for Rviz
-	
+	Eigen::VectorXd workspace_;                  ///< the robot's workspace dimensions
+	Eigen::Matrix3Xd cloud_normals_;             ///< the normals for each point in the point cloud
+	PointCloud::Ptr cloud_;                      ///< the input point cloud
+	int num_threads_;                            ///< the number of CPU threads used in the search
+	int num_samples_;                            ///< the number of samples used in the search
+	double nn_radius_taubin_;                    ///< the radius of the neighborhood search used in the grasp hypothesis search
+	double nn_radius_hands_;                     ///< the radius of the neighborhood search used in the quadric fit
+	FingerHand *finger_hand_;                    ///< the finger_hand
+	double hand_height_;                         ///< hand height
+	double init_bite_;                           ///< initial bite
+	bool plots_camera_sources_;                  ///< whether the camera source is plotted for each point in the point cloud
+	bool filters_boundaries_;                    ///< whether grasp hypotheses close to the workspace boundaries are filtered out
+	int plotting_mode_;                          ///< what plotting mode is used
+	std::string visuals_frame_;                  ///< visualization frame for Rviz
+
 	/** constants for plotting modes */
-	static const int NO_PLOTTING = 0; ///< no plotting
-	static const int PCL_PLOTTING = 1; ///< plotting in PCL
+	static const int NO_PLOTTING = 0;   ///< no plotting
+	static const int PCL_PLOTTING = 1;  ///< plotting in PCL
 	static const int RVIZ_PLOTTING = 2; ///< plotting in Rviz
 };
 

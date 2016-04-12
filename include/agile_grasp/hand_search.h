@@ -60,9 +60,8 @@ typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 */
 class HandSearch
 {
-  public:
-    
-    /**
+public:
+		/**
 		 * \brief Constructor.
 		 * \param finger_width the width of the robot hand fingers
 		 * \param hand_outer_diameter the maximum robot hand aperture
@@ -73,22 +72,19 @@ class HandSearch
 		 * \param num_samples the number of samples drawn from the point cloud
 		 * \param plots_hands whether grasp hypotheses are plotted
 		*/
-    HandSearch(double finger_width, double hand_outer_diameter, 
-      double hand_depth, double hand_height, double init_bite, int num_threads, 
-      int num_samples, bool plots_hands) : finger_width_(finger_width), 
-      hand_outer_diameter_(hand_outer_diameter), hand_depth_(hand_depth), 
-      hand_height_(hand_height), init_bite_(init_bite), 
-      num_threads_(num_threads), num_samples_(num_samples), 
-      plots_hands_(plots_hands), plots_samples_(false), 
-      plots_local_axes_(false), uses_determinstic_normal_estimation_(false), 
-      nn_radius_taubin_(0.03), nn_radius_hands_(0.08) { }
-    
-    /**
+		HandSearch(FingerHand *finger_hand, double hand_height, double init_bite, int num_threads, int num_samples, bool plots_hands) :
+		hand_height_(hand_height), init_bite_(init_bite),
+		num_threads_(num_threads), num_samples_(num_samples),
+		plots_hands_(plots_hands), plots_samples_(false),
+		plots_local_axes_(false), uses_determinstic_normal_estimation_(false),
+		nn_radius_taubin_(0.03), nn_radius_hands_(0.08) { finger_hand_ = finger_hand; }
+
+		/**
 		 * \brief Find grasp hypotheses in a point cloud.
-		 * 
+		 *
 		 * If the parameter @p indices is of size 0, then indices are randomly drawn from the point 
 		 * cloud according to a uniform distribution.
-		 * 
+		 *
 		 * \param cloud the point cloud that is searched for grasp hypotheses
 		 * \param pts_cam_source the camera source for each point in the point cloud
 		 * \param indices the list of point cloud indices that are used in the search
@@ -97,62 +93,58 @@ class HandSearch
 		 * \param uses_clustering whether clustering is used to divide the point cloud (useful for creating training data)
 		 * \return a list of grasp hypotheses
 		*/
-    std::vector<GraspHypothesis> findHands(const PointCloud::Ptr cloud, 
-      const Eigen::VectorXi& pts_cam_source, const std::vector<int>& indices,
-      const PointCloud::Ptr cloud_plot, bool calculates_antipodal, 
-      bool uses_clustering);
-      
-  
-  private:
-    
-    /**
-		 * \brief Find quadratic surfaces in a point cloud.
-		 * \param cloud the point cloud that is searched for quadrics
-		 * \param pts_cam_source the camera source for each point in the point cloud
-		 * \param kdtree the KD tree that is used for finding point neighborhoods
-		 * \param indices the list of point cloud indices that are used in the search
-		 * \return a list of quadratic surfaces
-		*/
-    std::vector<Quadric> findQuadrics(const PointCloud::Ptr cloud, const Eigen::VectorXi& pts_cam_source,
-			const pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree, const std::vector<int>& indices);
-		
-		/**
-		 * \brief Find grasp hypotheses in a point cloud given a list of quadratic surfaces.
-		 * \param cloud the point cloud that is searched for quadrics
-		 * \param pts_cam_source the camera source for each point in the point cloud
-		 * \param quadric_list the list of quadratic surfaces
-		 * \param hands_cam_source the camera source for each sample
-		 * \param kdtree the KD tree that is used for finding point neighborhoods
-		 * \return a list of grasp hypotheses
-		*/
-    std::vector<GraspHypothesis> findHands(const PointCloud::Ptr cloud, const Eigen::VectorXi& pts_cam_source,
-			const std::vector<Quadric>& quadric_list, const Eigen::VectorXi& hands_cam_source, 
-      const pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree);
-    
-    Eigen::Matrix4d cam_tf_left_, cam_tf_right_; ///< camera poses
-    
-    /** hand search parameters */
-    double finger_width_;
-    double hand_outer_diameter_; ///< the maximum robot hand aperture
-    double hand_depth_; ///< the finger length
-    double hand_height_; ///< the hand extends plus/minus this value along the hand axis
-    double init_bite_; ///< the minimum object height
-    int num_threads_; ///< the number of threads used in the search
-    int num_samples_; ///< the number of samples used in the search
-    
-    Eigen::Matrix3Xd cloud_normals_; ///< a 3xn matrix containing the normals for points in the point cloud
-    Plot plot_; ///< plot object for visualization of search results
-    
-    bool uses_determinstic_normal_estimation_; ///< whether the normal estimation for the quadratic surface is deterministic (used for debugging)
-    bool tolerant_antipodal_; ///< whether the antipodal testing uses "tolerant" thresholds
-    
-    bool plots_samples_; ///< whether the samples drawn from the point cloud are plotted
-    bool plots_camera_sources_; ///< whether the camera source for each point in the point cloud is plotted
-    bool plots_local_axes_; ///< whether the local axes estimated for each point neighborhood are plotted
-    bool plots_hands_; ///< whether the grasp hypotheses are plotted
-    
-    double nn_radius_taubin_; ///< the radius for the neighborhood search for the quadratic surface fit
-    double nn_radius_hands_; ///< the radius for the neighborhood search for the hand search
+		std::vector<GraspHypothesis> findHands(const PointCloud::Ptr cloud, 
+		const Eigen::VectorXi& pts_cam_source, const std::vector<int>& indices,
+		const PointCloud::Ptr cloud_plot, bool calculates_antipodal, 
+		bool uses_clustering);
+
+private:
+	/**
+	* \brief Find quadratic surfaces in a point cloud.
+	* \param cloud the point cloud that is searched for quadrics
+	* \param pts_cam_source the camera source for each point in the point cloud
+	* \param kdtree the KD tree that is used for finding point neighborhoods
+	* \param indices the list of point cloud indices that are used in the search
+	* \return a list of quadratic surfaces
+	*/
+	std::vector<Quadric> findQuadrics(const PointCloud::Ptr cloud, const Eigen::VectorXi& pts_cam_source,
+	                                  const pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree,
+	                                  const std::vector<int>& indices);
+
+	/**
+	 * \brief Find grasp hypotheses in a point cloud given a list of quadratic surfaces.
+	 * \param cloud the point cloud that is searched for quadrics
+	 * \param pts_cam_source the camera source for each point in the point cloud
+	 * \param quadric_list the list of quadratic surfaces
+	 * \param hands_cam_source the camera source for each sample
+	 * \param kdtree the KD tree that is used for finding point neighborhoods
+	 * \return a list of grasp hypotheses
+	*/
+	std::vector<GraspHypothesis> findHands(const PointCloud::Ptr cloud, const Eigen::VectorXi& pts_cam_source,
+	                                       const std::vector<Quadric>& quadric_list,
+	                                       const Eigen::VectorXi& hands_cam_source,
+                                           const pcl::KdTreeFLANN<pcl::PointXYZ>& kdtree);
+
+	Eigen::Matrix4d cam_tf_left_, cam_tf_right_; ///< camera poses
+	/** hand search parameters */
+	FingerHand *finger_hand_;                    ///< the finger hand
+	double hand_height_;                         ///< the hand extends plus/minus this value along the hand axis
+	double init_bite_;                           ///< the minimum object height
+	int num_threads_;                            ///< the number of threads used in the search
+	int num_samples_;                            ///< the number of samples used in the search
+
+	Eigen::Matrix3Xd cloud_normals_;             ///< a 3xn matrix containing the normals for points in the point cloud
+	Plot plot_;                                  ///< plot object for visualization of search results
+
+	bool uses_determinstic_normal_estimation_;   ///< whether the normal estimation for the quadratic surface is deterministic (used for debugging)
+	bool tolerant_antipodal_;                    ///< whether the antipodal testing uses "tolerant" thresholds
+	bool plots_samples_;                         ///< whether the samples drawn from the point cloud are plotted
+	bool plots_camera_sources_;                  ///< whether the camera source for each point in the point cloud is plotted
+	bool plots_local_axes_;                      ///< whether the local axes estimated for each point neighborhood are plotted
+	bool plots_hands_;                           ///< whether the grasp hypotheses are plotted
+
+	double nn_radius_taubin_;                    ///< the radius for the neighborhood search for the quadratic surface fit
+	double nn_radius_hands_;                     ///< the radius for the neighborhood search for the hand search
 };
 
 #endif /* HAND_SEARCH_H */ 

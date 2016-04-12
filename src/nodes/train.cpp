@@ -1,5 +1,6 @@
 #include <agile_grasp/learning.h>
 #include <agile_grasp/localization.h>
+#include <agile_grasp/parallel_hand.h>
 
 #include <boost/filesystem.hpp>
 
@@ -96,9 +97,15 @@ int main(int argc, char** argv)
 		loc.setNumSamples(num_samples);
 		loc.setNeighborhoodRadiusTaubin(0.03);
 		loc.setNeighborhoodRadiusHands(0.08);
-		loc.setFingerWidth(0.01);
-		loc.setHandOuterDiameter(0.09);
-		loc.setHandDepth(0.06);
+
+		double finger_width = 0.01;
+		double hand_outer_diameter = 0.09;
+		double hand_depth = 0.06;
+		double init_bite = 0.015;
+		double hand_height = 0.02;
+
+		loc.setFingerHand(new ParallelHand(finger_width, hand_outer_diameter, hand_depth));
+
 		loc.setInitBite(0.015);
 		loc.setHandHeight(0.02);
 

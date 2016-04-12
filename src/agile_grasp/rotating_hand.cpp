@@ -1,10 +1,9 @@
 #include <agile_grasp/rotating_hand.h>
 
-
 RotatingHand::RotatingHand(const Eigen::VectorXd& camera_origin_left,
-	const Eigen::VectorXd& camera_origin_right, const FingerHand& finger_hand, bool tolerant_antipodal,
+	const Eigen::VectorXd& camera_origin_right, bool tolerant_antipodal,
 	int cam_source) :
-		finger_hand_(finger_hand), tolerant_antipodal_(tolerant_antipodal), cam_source_(cam_source)
+		tolerant_antipodal_(tolerant_antipodal), cam_source_(cam_source)
 {
 	cams_.col(0) = camera_origin_left;
 	cams_.col(1) = camera_origin_right;
@@ -14,7 +13,6 @@ RotatingHand::RotatingHand(const Eigen::VectorXd& camera_origin_left,
 	Eigen::VectorXd angles = Eigen::VectorXd::LinSpaced(num_orientations + 1, -1.0 * M_PI, M_PI);
 	angles_ = angles.block(0, 0, 1, num_orientations);
 }
-
 
 void RotatingHand::transformPoints(const Eigen::Matrix3Xd& points, const Eigen::Vector3d& normal,
 	const Eigen::Vector3d& axis, const Eigen::Matrix3Xd& normals, const Eigen::VectorXi& points_cam_source,
@@ -74,8 +72,7 @@ void RotatingHand::transformPoints(const Eigen::Matrix3Xd& points, const Eigen::
 	points_cam_source_ = points_cam_source_cropped;
 }
 
-
-std::vector<GraspHypothesis> RotatingHand::evaluateHand(double init_bite, const Eigen::Vector3d& sample,
+std::vector<GraspHypothesis> RotatingHand::evaluateHand(FingerHand *finger_hand, double init_bite, const Eigen::Vector3d& sample,
 	bool use_antipodal)
 {
 	// initialize hands to zero
@@ -104,20 +101,20 @@ std::vector<GraspHypothesis> RotatingHand::evaluateHand(double init_bite, const 
 		Eigen::Vector3d binormal = frame_ * rot.transpose() * x;
 
 		// calculate free hand placements
-		finger_hand_.setPoints(points_rot);
-		finger_hand_.evaluateFingers(init_bite);
-		finger_hand_.evaluateHand();
+		finger_hand->setPoints(points_rot);
+		finger_hand->evaluateFingers(init_bite);
+		finger_hand->evaluateHand();
 
-		if (finger_hand_.getHand().sum() > 0)
+		if (finger_hand->getHand().sum() > 0)
 		{
 			// find deepest hand
-			finger_hand_.deepenHand(init_bite, finger_hand_.getHandDepth());
-			finger_hand_.evaluateGraspParameters(init_bite);
+			finger_hand->deepenHand(init_bite, finger_hand->getHandDepth());
+			finger_hand->evaluateGraspParameters(init_bite);
 
 			// save grasp parameters
 			Eigen::Vector3d surface, bottom;
-			surface << finger_hand_.getGraspSurface(), 0.0;
-			bottom << finger_hand_.getGraspBottom(), 0.0;
+			surface << finger_hand->getGraspSurface(), 0.0;
+			bottom << finger_hand->getGraspBottom(), 0.0;
 			surface = frame_ * rot.transpose() * surface;
 			bottom = frame_ * rot.transpose() * bottom;
 
@@ -125,7 +122,7 @@ std::vector<GraspHypothesis> RotatingHand::evaluateHand(double init_bite, const 
 			std::vector<int> points_in_box_indices;
 			for (int j = 0; j < points_rot.cols(); j++)
 			{
-				if (points_rot(1, j) < finger_hand_.getBackOfHand() + finger_hand_.getHandDepth())
+				if (points_rot(1, j) < finger_hand->getBackOfHand() + finger_hand->getHandDepth())
 					points_in_box_indices.push_back(j);
 			}
 
@@ -153,7 +150,7 @@ std::vector<GraspHypothesis> RotatingHand::evaluateHand(double init_bite, const 
 			surface += sample;
 			bottom += sample;
 
-			GraspHypothesis grasp(hand_axis_, approach, binormal, bottom, surface, finger_hand_.getGraspWidth(),
+			GraspHypothesis grasp(hand_axis_, approach, binormal, bottom, surface, finger_hand->getGraspWidth(),
 				points_in_box, indices_cam1, indices_cam2, cam_source_);
 
 			if (use_antipodal) // if we need to evaluate whether the grasp is antipodal

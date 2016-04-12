@@ -1,6 +1,6 @@
 #include <agile_grasp/quadric.h>
 #include <agile_grasp/rotating_hand.h>
-#include <agile_grasp/finger_hand.h>
+#include <agile_grasp/parallel_hand.h>
 #include <agile_grasp/grasp_hypothesis.h>
 
 #include <pcl/io/pcd_io.h>
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
   double hand_outer_diameter_ = 0.09;
   double hand_depth_ = 0.06;
 
-  FingerHand finger_hand(finger_width_, hand_outer_diameter_, hand_depth_);
+  ParallelHand finger_hand(finger_width_, hand_outer_diameter_, hand_depth_);
 
   double hand_height_ = 0.02;
   double init_bite_ = 0.01;
