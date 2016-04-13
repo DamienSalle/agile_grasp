@@ -36,6 +36,90 @@
 #include <iostream>
 #include <vector>
 
+class Bla {
+public:
+  /**
+   * \brief Find collision-free finger placements.
+   * \param bite the minimum object height
+  */
+  virtual void evaluateFingers(double bite) = 0;
+
+	/**
+   * \brief Find robot hand configurations that fit the cloud.
+  */
+  virtual void evaluateHand() = 0;
+
+	/**
+   * \brief Set the grasp parameters.
+   *
+   * The parameter @p bite is used to calculate the grasp width by only evaluating the width of 
+   * the points below @p bite.
+   *
+   * \param bite the minimum object height
+  */
+	virtual void evaluateGraspParameters(double bite) = 0;
+	
+	/**
+   * \brief Select center hand and try to extend it into the object as deeply as possible.
+   * \param init_deepness the initial deepness (usually the minimum object height)
+   * \param max_deepness the maximum allowed deepness (usually the finger length)
+  */
+	virtual void deepenHand(double init_deepness, double max_deepness) = 0;
+
+	/**
+	 * \brief Set the points.
+	 *
+	 * The points contained in the matrix @p points are assumed to be already rotated into the robot 
+	 * hand frame and offset to a point within the local neighborhood.
+	 *
+	 * \param points the points to be set
+	*/
+	virtual void setPoints(const Eigen::MatrixXd& points) = 0;
+	
+	/**
+	 * \brief Return the depth of the hand.
+	 * \return the hand depth
+	*/
+	virtual double getHandDepth() const = 0;
+	
+	/**
+	 * \brief Return the hand configuration evaluations.
+	 * \return the hand configuration evaluations
+	*/
+	virtual const Eigen::Array<bool, 1, Eigen::Dynamic>& getHand() const = 0;
+	
+	/**
+	 * \brief Return the finger placement evaluations.
+	 * \return the hand configuration evaluations
+	*/
+	virtual const Eigen::Array<bool, 1, Eigen::Dynamic>& getFingers() const = 0;
+	
+	/**
+	 * \brief Return the grasp position between the end of the finger tips.
+	 * \return the 2x1 grasp position between the end of the finger tips
+	*/
+	virtual const Eigen::Vector2d& getGraspBottom() const = 0;
+	
+	/**
+	 * \brief Return the grasp position between the end of the finger tips projected onto the back of the hand.
+	 * \return the 2x1 grasp position between the end of the finger tips projected onto the back of the hand
+	*/
+	virtual const Eigen::Vector2d& getGraspSurface() const = 0;
+	
+	/**
+	 * \brief Return the width of the object contained in the grasp.
+	 * \return the width of the object contained in the grasp
+	*/
+	virtual double getGraspWidth() const = 0;
+	
+	/**
+	 * \brief Return where the back of the hand is.
+	 * \return the back of the hand
+	*/
+	virtual double getBackOfHand() const = 0;
+
+};
+
 /** FingerHand class
  *
  * \brief Calculate collision-free fingers
@@ -45,7 +129,7 @@
  * moved into the object.
  * 
 */
-class FingerHand
+class FingerHand : public Bla
 {
 public:
 
@@ -68,12 +152,12 @@ public:
    * \brief Find collision-free finger placements.
    * \param bite the minimum object height
   */
-  void evaluateFingers(double bite);
+  virtual void evaluateFingers(double bite);
 	
 	/**
    * \brief Find robot hand configurations that fit the cloud.
   */
-  void evaluateHand();
+  virtual void evaluateHand();
 	
 	/**
    * \brief Set the grasp parameters.
@@ -83,14 +167,14 @@ public:
    * 
    * \param bite the minimum object height
   */
-  void evaluateGraspParameters(double bite);
+  virtual void evaluateGraspParameters(double bite);
 	
 	/**
    * \brief Select center hand and try to extend it into the object as deeply as possible.
    * \param init_deepness the initial deepness (usually the minimum object height)
    * \param max_deepness the maximum allowed deepness (usually the finger length)
   */
-  void deepenHand(double init_deepness, double max_deepness);
+  virtual void deepenHand(double init_deepness, double max_deepness);
 	
 	/**
 	 * \brief Set the points.
@@ -100,20 +184,20 @@ public:
 	 * 
 	 * \param points the points to be set
 	*/
-  void setPoints(const Eigen::MatrixXd& points)
-  {
-    this->points_ = points;
-  }
+	void setPoints(const Eigen::MatrixXd& points)
+	{
+		this->points_ = points;
+	}
 	
 	/**
 	 * \brief Return the depth of the hand.
 	 * \return the hand depth
 	*/
-  double getHandDepth() const
-  {
-    return hand_depth_;
-  }
-	
+	double getHandDepth() const
+	{
+		return hand_depth_;
+	}
+
 	/**
 	 * \brief Return the hand configuration evaluations.
 	 * \return the hand configuration evaluations
@@ -169,21 +253,20 @@ public:
   }
 
 private:
+	double finger_width_; ///< the width of the robot hand fingers
+	double hand_outer_diameter_; ///< the maximum aperture of the robot hand
+	double hand_depth_; ///< the hand depth (finger length)
 
-  double finger_width_; ///< the width of the robot hand fingers
-  double hand_outer_diameter_; ///< the maximum aperture of the robot hand
-  double hand_depth_; ///< the hand depth (finger length)
+	double back_of_hand_; ///< where the back of the hand is (distance from back to position between finger tip ends)
 
-  double back_of_hand_; ///< where the back of the hand is (distance from back to position between finger tip ends)
+	double grasp_width_; ///< the width of the object contained in the grasp
 
-  double grasp_width_; ///< the width of the object contained in the grasp
-
-  Eigen::VectorXd finger_spacing_; ///< the possible finger placements
-  Eigen::Array<bool, 1, Eigen::Dynamic> fingers_; ///< indicates which finger placements are collision-free
-  Eigen::Array<bool, 1, Eigen::Dynamic> hand_;///< indicates which hand configurations fit the point cloud
-  Eigen::MatrixXd points_; ///< the points in the point neighborhood (see FingerHand::setPoints)
-  Eigen::Vector2d grasp_bottom; ///< the grasp position between the end of the finger tips
-  Eigen::Vector2d grasp_surface; ///< the position between the end of the finger tips projected to the back of the hand
+	Eigen::VectorXd finger_spacing_; ///< the possible finger placements
+	Eigen::Array<bool, 1, Eigen::Dynamic> fingers_; ///< indicates which finger placements are collision-free
+	Eigen::Array<bool, 1, Eigen::Dynamic> hand_;///< indicates which hand configurations fit the point cloud
+	Eigen::MatrixXd points_; ///< the points in the point neighborhood (see FingerHand::setPoints)
+	Eigen::Vector2d grasp_bottom; ///< the grasp position between the end of the finger tips
+	Eigen::Vector2d grasp_surface; ///< the position between the end of the finger tips projected to the back of the hand
 };
 
 #endif
