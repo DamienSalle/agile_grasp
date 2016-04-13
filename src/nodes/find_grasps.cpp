@@ -68,7 +68,7 @@ int main(int argc, char** argv)
       node.param("hand_depth", hand_depth, HAND_DEPTH);
       params.finger_hand_ = new ParallelHand(finger_width, hand_outer_diameter, hand_depth);
   }
-  //TODO else 
+  //TODO else
 
   node.param("init_bite", params.init_bite_, INIT_BITE);
   node.param("hand_height", params.hand_height_, HAND_HEIGHT);

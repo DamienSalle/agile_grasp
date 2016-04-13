@@ -1,5 +1,6 @@
 #include <agile_grasp/learning.h>
 #include <agile_grasp/localization.h>
+#include <agile_grasp/parallel_hand.h>
 
 int main(int argc, char** argv)
 {
@@ -71,11 +72,18 @@ int main(int argc, char** argv)
     loc.setNumSamples(num_samples);
     loc.setNeighborhoodRadiusTaubin(taubin_radius);
     loc.setNeighborhoodRadiusHands(hand_radius);
-    loc.setFingerWidth(0.01);
-    loc.setHandOuterDiameter(0.09);
-    loc.setHandDepth(0.06);
+
+    double finger_width, hand_outer_diameter, hand_depth;
+	finger_width = 0.01;
+	hand_outer_diameter = 0.09;
+	hand_depth = 0.06;
+
+	ParallelHand *parallel_hand = new ParallelHand(finger_width, hand_outer_diameter, hand_depth);
+    loc.setFingerHand(parallel_hand);
+
     loc.setInitBite(0.01);
     loc.setHandHeight(0.02);
+
     std::cout << "Localizing hands ...\n";
 
     // test with fixed set of indices

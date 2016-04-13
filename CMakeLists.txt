@@ -131,7 +131,7 @@ add_library(hand_search src/${PROJECT_NAME}/hand_search.cpp)
 #add_executable(test_local_axes src/tests/test_local_axes.cpp)
 #add_executable(opencv_test src/tests/opencv_test.cpp)
 add_executable(train_svm src/nodes/train.cpp)
-#add_executable(test_svm src/nodes/test.cpp)
+add_executable(test_svm src/nodes/test.cpp)
 add_executable(find_grasps src/nodes/find_grasps.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -149,7 +149,7 @@ target_link_libraries(localization grasp_hypothesis hand_search handle handle_se
 target_link_libraries(learning rotating_hand ${OpenCV_LIBRARIES})
 #target_link_libraries(learning_test learning localization quadric rotating_hand parallel_hand ${PCL_LIBRARIES})
 target_link_libraries(train_svm learning localization ${PCL_LIBRARIES})
-#target_link_libraries(test_svm learning localization ${PCL_LIBRARIES})
+target_link_libraries(test_svm learning localization ${PCL_LIBRARIES})
 #target_link_libraries(opencv_test ${OpenCV_LIBRARIES})
 target_link_libraries(handle rotating_hand)
 target_link_libraries(find_grasps grasp_localizer ${catkin_LIBRARIES} ${PCL_LIBRARIES})
